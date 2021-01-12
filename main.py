@@ -21,13 +21,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # ]
 #
 # 后台api允许跨域
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_credentials=["*"],
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 def get_db():
     db = SessionLocal()
