@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends
 import requests
 from sqlalchemy.orm import Session
+from fastapi.staticfiles import StaticFiles
 
 from sql_app.database import SessionLocal, engine
 from sql_app import models, crud
@@ -11,6 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # origins = [
 #
