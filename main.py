@@ -8,6 +8,7 @@ from sql_app.database import SessionLocal, engine
 from sql_app import models, crud
 import math
 import time
+from streamlink import Streamlink
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -87,5 +88,5 @@ def getPlayers(db: Session = Depends(get_db)):
     return crud.get_player(db=db)
 
 @app.get("/getPlayersVideo")
-def getPlayersVideo(player:str, db: Session = Depends(get_db)):
-    return crud.get_video_by_player(db=db,player=player)
+def getPlayersVideo(player:str,page:int = 1,pagesize:int = 1000,db: Session = Depends(get_db)):
+    return crud.get_video_by_player(db=db,player=player,page=page,pagesize=pagesize)
