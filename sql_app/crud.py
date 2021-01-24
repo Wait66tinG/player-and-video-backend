@@ -5,8 +5,8 @@ from . import models
 def get_player(db: Session):
     return db.query(models.Player).all()
 
-def get_videos(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Videos).offset(skip).limit(limit).all()
+def get_videos(db: Session, skip: int = 0, limit: int = 12):
+    return db.query(models.Videos).order_by(models.Videos.created.desc()).limit(limit).all()
 
 def get_video_by_bvid(db: Session, bvid:str):
     return db.query(models.Videos).filter(models.Videos.bvid == bvid).first()
@@ -31,14 +31,32 @@ def create_player_video(db: Session, item):
             playername = ''
 
     db_video = models.Videos(title=item["title"],
-                            created=item["created"],
-                            bvid=item["bvid"],
-                            length=item["length"],
-                            player=playername)
+        created=item["created"],
+        bvid=item["bvid"],
+        length=item["length"],
+        player=playername,
+         )
     db.add(db_video)
     db.commit()
     db.refresh(db_video)
     # return db_video
 
+def get_winprobability_date(db: Session, date:str):
+    return db.query(models.winprobability).filter(models.winprobability.date == date).first()
 
+def get_winprobability_ID(db: Session):
+    return db.query(models.winprobability).order_by(models.winprobability.id.desc()).first()
+
+def creat_winprobability(db: Session, item):
+    db_winprobability = models.winprobability(
+        date=item["date"],
+        number=item['number'],
+        PVT=item['PVT'],
+        PVZ = item['PVZ'],
+        TVZ = item['TVZ'],
+    )
+    db.add(db_winprobability)
+    db.commit()
+    db.refresh(db_winprobability)
+    return "success"
 

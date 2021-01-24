@@ -8,8 +8,8 @@ from sql_app.database import SessionLocal, engine
 from sql_app import models, crud
 import math
 import time
-from streamlink import Streamlink
-
+import datetime
+from bs4 import BeautifulSoup
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -67,6 +67,7 @@ def GetData(db: Session = Depends(get_db)):
                     break
                 else:
                     crud.create_player_video(db=db, item=j)
+    return "update success"
     # for i in crud.get_player(db=db):
     #     print(i["name"])
     # return r.json()["data"]["list"]["vlist"][0]["bvid"]
@@ -86,6 +87,31 @@ def creatPlayers(db: Session = Depends(get_db)):
 @app.get("/getPlayers")
 def getPlayers(db: Session = Depends(get_db)):
     return crud.get_player(db=db)
+
+@app.get("/getWinprobability")
+def getWinprobability(db: Session = Depends(get_db)):
+    r = requests.get("http://aligulac.com/periods/latest/", timeout=10)
+    r.close()
+    tag = BeautifulSoup(r.text, 'html.parser').find_all('table')[4]('td')
+    dict1 = {}
+    dict1['number'] = tag[11].text
+    dict1["PVT"] = tag[13].text
+    dict1["PVZ"] = tag[15].text
+    dict1["TVZ"] = tag[17].text
+    dict1["date"] = str(datetime.date.today())
+    if crud.get_winprobability_date(db=db,date=str(datetime.date.today())):
+        pass
+    else:
+        crud.creat_winprobability(db=db,item=dict1)
+
+
+@app.get("/getWinprobability1")
+def getWinprobability1(db: Session = Depends(get_db)):
+    return crud.get_winprobability_ID(db=db)
+
+@app.get("/getNewReport")
+def getNewReport(db: Session = Depends(get_db)):
+    return crud.get_videos(db=db)
 
 @app.get("/getPlayersVideo")
 def getPlayersVideo(player:str,page:int = 1,pagesize:int = 1000,db: Session = Depends(get_db)):
