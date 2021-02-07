@@ -7,14 +7,12 @@ from .database import Base
 class Player(Base):
     __tablename__ = "players"
 
-
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), unique=True, index=True)
 
-
-    # videos = relationship("Videos", back_populates="owner")
 class winprobability(Base):
     __tablename__ = "winprobability"
+
     id = Column(Integer, primary_key=True, index=True)
     date = Column(String(255), unique=True, index=True)
     number = Column(Integer)
@@ -30,6 +28,42 @@ class Videos(Base):
     created = Column(Integer)
     bvid = Column(String(255))
     length = Column(String(255))
-    # owner_id = Column(Integer, ForeignKey("players.id"))
     player = Column(String(255))
-    # owner = relationship("Player", back_populates="videos")
+
+class Discuss(Base):
+    __tablename__ = "discuss"
+
+    id = Column(Integer, primary_key=True, index=True)
+    player = Column(Integer)
+    user = Column(Integer)
+    date = Column(Integer)
+    context = Column(String(255))
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, index=True)
+    name = Column(String(255), unique=True, index=True)
+    hashed_password = Column(String(255))
+    is_active = Column(Boolean, default=True)
+
+    items = relationship("Item", back_populates="owner")
+
+
+class Item(Base):
+    __tablename__ = "items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    context = Column(String(255), index=True)
+    description = Column(String(255), index=True)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+
+    owner = relationship("User", back_populates="items")
+
+class cookie(Base):
+    __tablename__ = "cookie"
+
+    id = Column(Integer, primary_key=True, index=True)
+    context = Column(String(255), index=True)
+    user_id = Column(String(255), index=True)

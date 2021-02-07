@@ -1,7 +1,40 @@
 from sqlalchemy.orm import Session
 
-from . import models
+from . import models ,schemas
 
+# user
+def get_user(db: Session, user_id: int):
+    return db.query(models.User).filter(models.User.id == user_id).first()
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(models.User).filter(models.User.email == email).first()
+
+def get_users(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.User).offset(skip).limit(limit).all()
+
+def create_user(db: Session, user: schemas.UserCreate):
+    fake_hashed_password = user.password
+    db_user = models.User(
+        email=user.email,
+        hashed_password=fake_hashed_password,
+        name=user.name)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+def get_items(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Item).offset(skip).limit(limit).all()
+
+def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
+    db_item = models.Item(**item.dict(), owner_id=user_id)
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+
+# player and video
 def get_player(db: Session):
     return db.query(models.Player).all()
 
@@ -30,7 +63,8 @@ def create_player_video(db: Session, item):
         else:
             playername = ''
 
-    db_video = models.Videos(title=item["title"],
+    db_video = models.Videos(
+        title=item["title"],
         created=item["created"],
         bvid=item["bvid"],
         length=item["length"],
@@ -40,6 +74,8 @@ def create_player_video(db: Session, item):
     db.commit()
     db.refresh(db_video)
     # return db_video
+
+# winprobability
 
 def get_winprobability_date(db: Session, date:str):
     return db.query(models.winprobability).filter(models.winprobability.date == date).first()
@@ -60,3 +96,48 @@ def creat_winprobability(db: Session, item):
     db.refresh(db_winprobability)
     return "success"
 
+# login
+
+def get_cookie(db: Session, data:str):
+    return db.query(models.cookie).filter(models.cookie.context == data).first()
+
+def create_cookie(db: Session, data:str,user_id:int):
+    db_cookie = models.cookie(
+        user_id = user_id,
+        context = data,
+    )
+    db.add(db_cookie)
+    db.commit()
+    db.refresh(db_cookie)
+    return db.query(models.cookie).filter(models.cookie.context == data).first()
+
+# discuss
+
+def create_discuss(db: Session, discuss:schemas.Discuss):
+    db_discuss=models.Discuss(
+        player=discuss.player,
+        user=discuss.user,
+        date=discuss.date,
+        context=discuss.context,
+    )
+    db.add(db_discuss)
+    db.commit()
+    db.refresh(db_discuss)
+    return db_discuss
+
+# def create_user(db: Session, user: schemas.UserCreate):
+#     fake_hashed_password = user.password
+#     db_user = models.User(
+#         email=user.email,
+#         hashed_password=fake_hashed_password,
+#         name=user.name)
+#     db.add(db_user)
+#     db.commit()
+#     db.refresh(db_user)
+#     return db_user
+
+def get_discuss_by_player(db: Session, player:int):
+    return db.query(models.Discuss).filter(models.Discuss.player == player).order_by(models.Discuss.created.desc()).all()
+#
+def get_discuss_by_user(db: Session, user:int):
+    return db.query(models.Discuss).filter(models.Discuss.id == user).order_by(models.Discuss.created.desc()).all()
