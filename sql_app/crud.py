@@ -48,7 +48,13 @@ def get_video_by_player(db: Session, player:str,page: int = 1,pagesize: int = 20
     return db.query(models.Videos).filter(models.Videos.player == player).order_by(models.Videos.created.desc()).offset((page-1)*pagesize).limit(pagesize).all()
 
 def create_player(db: Session, player):
-    db_player = models.Player(name=player)
+    db_player = models.Player(
+        name=player['name'],
+        race=player['race'],
+        realname=player['realname'],
+        nickname=player['nickname'],
+        country=player['country'],
+    )
     db.add(db_player)
     db.commit()
     db.refresh(db_player)
@@ -74,6 +80,9 @@ def create_player_video(db: Session, item):
     db.commit()
     db.refresh(db_video)
     # return db_video
+
+def find_player(db: Session, player):
+    return db.query(models.Player).filter(models.Player.name == player).first()
 
 # winprobability
 
@@ -113,7 +122,7 @@ def create_cookie(db: Session, data:str,user_id:int):
 
 # discuss
 
-def create_discuss(db: Session, discuss:schemas.Discuss):
+def create_discuss(db: Session, discuss):
     db_discuss=models.Discuss(
         player=discuss.player,
         user=discuss.user,
@@ -123,7 +132,7 @@ def create_discuss(db: Session, discuss:schemas.Discuss):
     db.add(db_discuss)
     db.commit()
     db.refresh(db_discuss)
-    return db_discuss
+    return discuss
 
 # def create_user(db: Session, user: schemas.UserCreate):
 #     fake_hashed_password = user.password
@@ -137,7 +146,9 @@ def create_discuss(db: Session, discuss:schemas.Discuss):
 #     return db_user
 
 def get_discuss_by_player(db: Session, player:int):
-    return db.query(models.Discuss).filter(models.Discuss.player == player).order_by(models.Discuss.created.desc()).all()
+    return db.query(models.Discuss).filter(models.Discuss.player == player).order_by(models.Discuss.date.desc()).all()
+# def get_discuss_by_player(db: Session, player:int):
+#     return db.query(models.Discuss).filter(models.Discuss.player == player).order_by(models.Discuss.date.desc()).all()
 #
 def get_discuss_by_user(db: Session, user:int):
-    return db.query(models.Discuss).filter(models.Discuss.id == user).order_by(models.Discuss.created.desc()).all()
+    return db.query(models.Discuss).filter(models.Discuss.user == user).order_by(models.Discuss.date.desc()).all()

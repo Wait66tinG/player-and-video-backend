@@ -9,6 +9,10 @@ class Player(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), unique=True, index=True)
+    race = Column(String(255))
+    realname = Column(String(255))
+    nickname = Column(String(255))
+    country = Column(String(255))
 
 class winprobability(Base):
     __tablename__ = "winprobability"
