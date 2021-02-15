@@ -387,10 +387,29 @@ async def read_items(authorization: Optional[str] = Header(None),db: Session = D
 
 @app.get("/getDiscussByPlayer")
 def getDiscussByPlayer(player:int,db: Session = Depends(get_db)):
+    # data = crud.get_discuss_by_player(db=db, player=player)
+    # # range(len(crud.get_discuss_by_player(db=db, player=player)))
+    # for i in data:
+    #     arm = crud.get_user(db=db,user_id=i.user)
+    #     # print(crud.get_user(db=db,user_id=arm).name)
+    #     print(type(i))
+    #     # i.user = arm
+    data = []
+
+    for i in range(len(crud.get_discuss_by_player(db=db, player=player))):
+        dic = {'player': 0, 'user': '', 'date': 0, 'context': '', }
+        temp = crud.get_user(db=db,user_id=crud.get_discuss_by_player(db=db, player=player)[i].user).name
+        dic['player'] = crud.get_discuss_by_player(db=db, player=player)[i].player
+        # dic['user'] = crud.get_discuss_by_player(db=db, player=player)[i].user
+        dic['user'] = temp
+        dic['date'] = crud.get_discuss_by_player(db=db, player=player)[i].date
+        dic['context'] = crud.get_discuss_by_player(db=db, player=player)[i].context
+        data.append(dic)
+        # print(dic)
     if crud.get_discuss_by_player(db=db,player=player) is None:
         raise HTTPException(status_code=200, detail=None)
-    return crud.get_discuss_by_player(db=db,player=player)
-
+    # return crud.get_discuss_by_player(db=db,player=player)
+    return data
 @app.get("/getDiscussByUser")
 def getDiscussByUser(userid:int,db: Session = Depends(get_db)):
     return crud.get_discuss_by_user(db=db,user=userid)
@@ -405,3 +424,8 @@ def postDiscuss(discuss: schemas.Discuss, db: Session = Depends(get_db)):
 #     if db_user:
 #         raise HTTPException(status_code=200, detail="Email already registered")
 #     return crud.create_user(db=db, user=user)
+
+@app.get("/test/")
+def test(i: int, db: Session = Depends(get_db)):
+    # crud.get_discuss_by_player(db=db, player=2)
+    return crud.get_user(db=db, user_id=crud.get_discuss_by_player(db=db, player=2)[i].user).name

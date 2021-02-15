@@ -146,6 +146,7 @@ def create_discuss(db: Session, discuss):
 #     return db_user
 
 def get_discuss_by_player(db: Session, player:int):
+
     return db.query(models.Discuss).filter(models.Discuss.player == player).order_by(models.Discuss.date.desc()).all()
 # def get_discuss_by_player(db: Session, player:int):
 #     return db.query(models.Discuss).filter(models.Discuss.player == player).order_by(models.Discuss.date.desc()).all()
