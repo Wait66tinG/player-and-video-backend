@@ -38,6 +38,9 @@ def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
 def get_player(db: Session):
     return db.query(models.Player).all()
 
+def get_player_by_id(player_id:int,db: Session):
+    return db.query(models.Player).filter(models.Player.id == player_id).all()
+
 def get_videos(db: Session, skip: int = 0, limit: int = 12):
     return db.query(models.Videos).order_by(models.Videos.created.desc()).limit(limit).all()
 
@@ -134,22 +137,17 @@ def create_discuss(db: Session, discuss):
     db.refresh(db_discuss)
     return discuss
 
-# def create_user(db: Session, user: schemas.UserCreate):
-#     fake_hashed_password = user.password
-#     db_user = models.User(
-#         email=user.email,
-#         hashed_password=fake_hashed_password,
-#         name=user.name)
-#     db.add(db_user)
-#     db.commit()
-#     db.refresh(db_user)
-#     return db_user
-
 def get_discuss_by_player(db: Session, player:int):
-
     return db.query(models.Discuss).filter(models.Discuss.player == player).order_by(models.Discuss.date.desc()).all()
-# def get_discuss_by_player(db: Session, player:int):
-#     return db.query(models.Discuss).filter(models.Discuss.player == player).order_by(models.Discuss.date.desc()).all()
-#
+
+def get_discuss_by_id(db: Session, discuss_id: int):
+    return db.query(models.Discuss).filter(models.Discuss.id == discuss_id).first()
+
 def get_discuss_by_user(db: Session, user:int):
     return db.query(models.Discuss).filter(models.Discuss.user == user).order_by(models.Discuss.date.desc()).all()
+
+def delete_discuss_by_id(db: Session, id:int):
+    db_deletediscuss = db.query(models.Discuss).filter(models.Discuss.id == id)
+    print(db_deletediscuss)
+    db_deletediscuss.delete()
+    db.commit()

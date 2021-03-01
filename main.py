@@ -73,10 +73,6 @@ def GetData(db: Session = Depends(get_db)):
                 else:
                     crud.create_player_video(db=db, item=j)
     return "update success"
-    # for i in crud.get_player(db=db):
-    #     print(i["name"])
-    # return r.json()["data"]["list"]["vlist"][0]["bvid"]
-    # return crud.get_player(db=db)
 
 @app.get("/creatPlayers")
 def creatPlayers(db: Session = Depends(get_db)):
@@ -297,6 +293,10 @@ def creatPlayers(db: Session = Depends(get_db)):
 def getPlayers(db: Session = Depends(get_db)):
     return crud.get_player(db=db)
 
+@app.get("/getDiscussPlayer")
+def getDiscussPlayer(playerid:int,db: Session = Depends(get_db)):
+    return crud.get_player_by_id(db=db,player_id=playerid)
+
 @app.get("/getPlayerData")
 def find_player(player:str,db: Session = Depends(get_db)):
     return crud.find_player(db=db,player=player)
@@ -342,7 +342,6 @@ def read_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user and db_user.hashed_password==user.password:
         a = str(uuid.uuid1())
-        # response.set_cookie(key="session", value=a)
         crud.create_cookie(db=db, data='Bearer '+a,user_id=db_user.id)
         db_user.token = a
         return db_user
@@ -365,8 +364,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 
 @app.post("/users/{user_id}/items/", response_model=schemas.Item)
 def create_item_for_user(
-    user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
-):
+    user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)):
     return crud.create_user_item(db=db, item=item, user_id=user_id)
 
 
@@ -377,7 +375,6 @@ def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 @app.get("/items/cookie",response_model=schemas.User)
 async def read_items(authorization: Optional[str] = Header(None),db: Session = Depends(get_db)):
-    # print(authorization)
     if crud.get_cookie(db=db,data=authorization):
         user_id = crud.get_cookie(db=db, data=authorization).user_id
         db_user = crud.get_user(db, user_id=user_id)
@@ -387,45 +384,57 @@ async def read_items(authorization: Optional[str] = Header(None),db: Session = D
 
 @app.get("/getDiscussByPlayer")
 def getDiscussByPlayer(player:int,db: Session = Depends(get_db)):
-    # data = crud.get_discuss_by_player(db=db, player=player)
-    # # range(len(crud.get_discuss_by_player(db=db, player=player)))
-    # for i in data:
-    #     arm = crud.get_user(db=db,user_id=i.user)
-    #     # print(crud.get_user(db=db,user_id=arm).name)
-    #     print(type(i))
-    #     # i.user = arm
     data = []
-
     for i in range(len(crud.get_discuss_by_player(db=db, player=player))):
         dic = {'player': 0, 'user': '', 'date': 0, 'context': '', }
         temp = crud.get_user(db=db,user_id=crud.get_discuss_by_player(db=db, player=player)[i].user).name
         dic['player'] = crud.get_discuss_by_player(db=db, player=player)[i].player
-        # dic['user'] = crud.get_discuss_by_player(db=db, player=player)[i].user
+        dic['id'] = crud.get_discuss_by_player(db=db, player=player)[i].id
+        dic['userid'] = crud.get_discuss_by_player(db=db, player=player)[i].user
         dic['user'] = temp
         dic['date'] = crud.get_discuss_by_player(db=db, player=player)[i].date
         dic['context'] = crud.get_discuss_by_player(db=db, player=player)[i].context
         data.append(dic)
-        # print(dic)
     if crud.get_discuss_by_player(db=db,player=player) is None:
         raise HTTPException(status_code=200, detail=None)
-    # return crud.get_discuss_by_player(db=db,player=player)
     return data
+
+
+
 @app.get("/getDiscussByUser")
 def getDiscussByUser(userid:int,db: Session = Depends(get_db)):
-    return crud.get_discuss_by_user(db=db,user=userid)
+    data = []
+    for i in range(len(crud.get_discuss_by_user(db=db, user=userid))):
+        dic = {'player': 0, 'user': '', 'date': 0, 'context': '', }
+        temp = crud.get_player_by_id(db=db,player_id=crud.get_discuss_by_user(db=db, user=userid)[i].player)[0].name
+        dic['player'] = temp
+        dic['id'] = crud.get_discuss_by_user(db=db, user=userid)[i].id
+        dic['user'] = crud.get_discuss_by_user(db=db, user=userid)[i].player
+        dic['date'] = crud.get_discuss_by_user(db=db, user=userid)[i].date
+        dic['context'] = crud.get_discuss_by_user(db=db, user=userid)[i].context
+        data.append(dic)
+    if crud.get_discuss_by_user(db=db, user=userid) is None:
+        raise HTTPException(status_code=200, detail=None)
+    return data
 
-@app.post("/postDiscuss/",response_model=schemas.Discuss)
+@app.get("/getDiscussById")
+def getDiscussById(id:int,db: Session = Depends(get_db)):
+    return crud.get_discuss_by_id(db=db,discuss_id=id)
+
+@app.post("/discuss/post/")
 def postDiscuss(discuss: schemas.Discuss, db: Session = Depends(get_db)):
+    discuss.date =int(time.time())
     return crud.create_discuss(db=db, discuss=discuss)
-
-# @app.post("/users/", response_model=schemas.User)
-# def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-#     db_user = crud.get_user_by_email(db, email=user.email)
-#     if db_user:
-#         raise HTTPException(status_code=200, detail="Email already registered")
-#     return crud.create_user(db=db, user=user)
 
 @app.get("/test/")
 def test(i: int, db: Session = Depends(get_db)):
-    # crud.get_discuss_by_player(db=db, player=2)
     return crud.get_user(db=db, user_id=crud.get_discuss_by_player(db=db, player=2)[i].user).name
+
+@app.put("/discuss/delete/")
+def deleteDiscuss(id: int, db: Session = Depends(get_db)):
+    discuss = crud.get_discuss_by_id(db=db, discuss_id=id)
+    if discuss is None:
+        raise HTTPException(status_code=200, detail="discuss already delete")
+    else:
+        crud.delete_discuss_by_id(db=db, id=id)
+    return "success"
